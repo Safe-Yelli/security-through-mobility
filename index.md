@@ -3,27 +3,10 @@ title: Security *through* mobility, not just *in* mobility
 date: 2022-10-15
 geometry: margin=1.5cm
 mainfont: Liberation Sans
-
-header-includes: 
-      - \usepackage{graphicx}
-      - \usepackage{fancyhdr}
-      - \pagestyle{fancy}
-      - \usepackage{titling}
-      - \pretitle{\begin{flushleft}
-        \LARGE
-        \vspace{-0.7in}}
-      - \preauthor{\begin{flushleft}
-        \vspace{-0.2in}}
-      - \postauthor{\end{flushleft}
-        \vspace{-0.2in}}
-      - \posttitle{\end{flushleft}}
-      - \predate{\begin{flushleft}
-        \vspace{-0.1in}}
-      - \postdate{\end{flushleft}
-        \vspace{-0.2in}}
 ---
 
-# Summary of research
+# Security *through* mobility, not just *in* mobility
+
 
 ## Important directions, ideas
 - Women face a lot of issues with accessibility through the lens of safety on roads. [^3]

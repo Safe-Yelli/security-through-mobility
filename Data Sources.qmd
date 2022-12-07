@@ -1,28 +1,13 @@
 ---
 title: Data Sources, Scraping, Issues
-date: 2022-10-15
+subtitle: Task 1B
+author: Adhavan Mohana Sivaraj (205304006)
+date: 2022-12-6
 geometry: margin=1.5cm
 mainfont: Liberation Sans
-
-header-includes: 
-      - \usepackage{graphicx}
-      - \usepackage{fancyhdr}
-      - \pagestyle{fancy}
-      - \usepackage{titling}
-      - \pretitle{\begin{flushleft}
-        \LARGE
-        \vspace{-0.7in}}
-      - \preauthor{\begin{flushleft}
-        \vspace{-0.2in}}
-      - \postauthor{\end{flushleft}
-        \vspace{-0.2in}}
-      - \posttitle{\end{flushleft}}
-      - \predate{\begin{flushleft}
-        \vspace{-0.1in}}
-      - \postdate{\end{flushleft}
-        \vspace{-0.2in}}
 ---
 
+**All datasets and code available at:** https://github.com/rungdung/security-through-mobility
 ## Found Data sources
 
 -   Bangalore Metropolitain Transport Corporation Network Data from BMTC portal mybmtc.com. That portal no longer exists and the dataset is from 2018. Is there a newer dataset? [^1] [^2] The original source for this analysis, Open Bangalore [^3] is no longer active and last updated this dataset 8 years ago. I do not have the time to query DataMeet [^4] an online forum for datarequests related to India, so I'll use another approach.
