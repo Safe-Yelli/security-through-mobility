@@ -27,12 +27,12 @@ mainfont: Liberation Sans
 ### Network analysis, visualisation, voronoi diagrams of bus stands and densities 
 
 - A network visualisation of bus stands from 2016 [^8]
-
-![[Areas/SMI/SA/assets/Pasted image 20221205150606.png]]
+![[Areas/SMI/SA/security-through-mobility/assets/Pasted image 20221205150606.png]]
 
 - Delauney Triangulation to optimise bus stops locations  [^9] 
+![[Areas/SMI/SA/security-through-mobility/assets/Voronoi.jpg]]
 
-![[Areas/SMI/SA/assets/Untitled.jpg]]
+
  [^1]: Iqbal, Asifa, and Vania Ceccato. "Is CPTED useful to guide the inventory of safety in parks? A study case in Stockholm, Sweden." _International criminal justice review_ 26, no. 2 (2016): 150-168.
  [^2]: Jacobs, Jane. "Jane jacobs." _The Death and Life of Great American Cities_ 21, no. 1 (1961): 13-25.
  [^3]: Gardner, Carol Brooks. _Passing by: Gender and public harassment_. Univ of California Press, 1995.
