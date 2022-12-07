@@ -1,8 +1,5 @@
 ---
-title: Security *through* mobility, not just *in* mobility
 date: 2022-10-15
-geometry: margin=1.5cm
-mainfont: Liberation Sans
 ---
 
 # Security *through* mobility, not just *in* mobility
@@ -27,10 +24,10 @@ mainfont: Liberation Sans
 ### Network analysis, visualisation, voronoi diagrams of bus stands and densities 
 
 - A network visualisation of bus stands from 2016 [^8]
-![[Areas/SMI/SA/security-through-mobility/assets/Pasted image 20221205150606.png]]
+![](Areas/SMI/SA/security-through-mobility/assets/network_visualisation.png)
 
 - Delauney Triangulation to optimise bus stops locations  [^9] 
-![[Areas/SMI/SA/security-through-mobility/assets/Voronoi.jpg]]
+![](Areas/SMI/SA/security-through-mobility/assets/triangulation_optimisation.jpg)
 
 
  [^1]: Iqbal, Asifa, and Vania Ceccato. "Is CPTED useful to guide the inventory of safety in parks? A study case in Stockholm, Sweden." _International criminal justice review_ 26, no. 2 (2016): 150-168.
