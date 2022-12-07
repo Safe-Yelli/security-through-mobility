@@ -1,0 +1,59 @@
+---
+title: Visual concepts
+date: 2022-12-7
+---
+## Concepts for visualising
+- A tool to optimise bus stop locations based on various factors.
+    - Ease of accessibility
+- A tool to detect roads that need feeder bus routes
+```{r}
+    library(rgdal)
+    library(dplyr)
+    library(rjson)
+    library(tidyr)
+    library(sf)
+    
+    # Data from bmtc api, bus stops 
+    bmtcStops <- jsonlite::fromJSON("./bmtc-api-2018-data/data/bmtc-api-2018-stops.json") %>% as.data.frame()
+    bmtcStops_ <- bmtcStops %>% drop_na() %>% st_as_sf(coords=c("StopLat","StopLong"),crs=3856)
+
+    head(bmtcStops)
+
+    # BBMP ward geometry
+    bbmpWardsSrc = "./assets/bbmp-final-new-wards.kml"
+    bbmpWards <- readOGR(bbmpWardsSrc) 
+
+    head(bbmpWards)
+```
+
+
+
+```{r}
+    library(leaflet)
+    library(ggplot2)
+    library(ggspatial)
+    library(sf)
+    library(ggvoronoi)
+
+    
+
+    
+    bmtcStopsSample <-sample_n(bmtcStops, 3000)
+
+    
+
+    ggplot() +
+        stat_voronoi(aes(x=bmtcStops$StopLong, y=bmtcStops$StopLat ), geom="path") +
+        geom_point(aes(x=bmtcStops$StopLong, y=bmtcStops$StopLat ))
+
+    # m <- leaflet(dataSample) %>%
+    #       addTiles() %>%
+    #       addMarkers(lat= dataSample$StopLat, lng= dataSample$StopLong)
+    
+    
+```
+
+### Diary of events
+- Discovered the KGIS portal to scrape from. Attempted scraping is included at https://github.com/rungdung/security-through-mobility/blob/main/Data%20Sources.qmd
+    
+    ![test](Areas/SMI/SA/security-through-mobility/assets/sample-viz-voronoi.png)

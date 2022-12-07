@@ -1,0 +1,66 @@
+---
+title: Data Sources, Scraping, Issues
+date: 2022-12-6
+---
+
+**All datasets and code available at:** https://github.com/rungdung/security-through-mobility
+## Found Data sources
+
+-   Bangalore Metropolitain Transport Corporation Network Data from BMTC portal mybmtc.com. That portal no longer exists and the dataset is from 2018. Is there a newer dataset? [^1] [^2] The original source for this analysis, Open Bangalore [^3] is no longer active and last updated this dataset 8 years ago. I do not have the time to query DataMeet [^4] an online forum for datarequests related to India, so I'll use another approach.
+
+-   Data from the myBMTC API in 2018, scraped by vivek for UrbanMorph [^5]
+
+## Scraping
+
+-   Scraped data from Moovit. But bus stop locations unavailable
+![](Areas/SMI/SA/security-through-mobility/assets/moovit_scraped.png)
+
+- Scraping from KGIS portal
+
+```{python scrape from KGIS}
+import xmltojson
+import json
+import requests
+from bs4 import BeautifulSoup as bs
+import pandas as pd
+
+linksList = []
+# Sample URL to fetch the html page
+url = "https://stg3.ksrsac.in/kgis/rest/services/TRANSPORT/BMTC/MapServer/0/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelContains&relationParam=&outFields=&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=true&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&f=html"
+
+# Get the page through get() method
+pageContent = requests.get(url=url).content
+parseContent = bs(pageContent, 'lxml')
+links = parseContent.find(class_="rbody").find_all('a')
+
+for link in links:
+    linkContent = requests.get("https://stg3.ksrsac.in/" + links[6]['href']).content
+    parseLinkContent = bs(linkContent, 'html.parser')
+    body = parseContent1.find("div", class_="rbody")
+
+    stopID = body.find("i",text="KGISBMTC_BusstopID: ").next_sibling.strip())
+    with open("busstops.json", "a") as file:
+    json.dump(json_, file)
+#linksList = pd.DataFrame(list(linksList))
+#linksList.to_csv("scraping-kgis/links.csv")
+
+
+#json_ = xmltojson.parse(html_response)
+
+
+
+#with open("busstops.json", "w") as file:
+ #   json.dump(json_, file)
+```
+
+[^1]: Anwar, Sajjad. "Mapping Public Transit in Bangalore." Mapbox Blog. MapBox, June 29, 2017. https://blog.mapbox.com/mapping-public-transit-in-bangalore-32cb80d18e02.
+
+[^2]: Anwar, Sajjad. "Bangalore Metropolitan Transport Corporation Network Data." Github Repository, June 29, 2017. https://github.com/geohacker/bmtc
+
+[^3]: "Openbangalore." GitHub. Accessed December 6, 2022. https://github.com/openbangalore.
+
+[^4]: "Data{Meet}." Data{Meet}. Accessed December 6, 2022. https://datameet.org/.
+
+[^5]: Urbanmorph. "Ras-Pt/Data at Main · Urbanmorph/Ras-PT." GitHub. Accessed December 6, 2022. https://github.com/urbanmorph/RAS-PT/tree/main/data.
+
+
