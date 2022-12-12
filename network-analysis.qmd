@@ -1,0 +1,110 @@
+---
+title: Analysing bus network in bangalore to discover pertinent smaller, newer routes
+date: 2022-12-12
+execute:
+  echo: false
+  warning: false
+format: 
+    pdf:
+        fig-width: 7
+        fig-height: 5
+geometry: margin=2cm
+---
+## Context
+
+### Motivations to design with
+- Safety and access to **public spaces in the city are negotiated for accessibility to the self by women** [^7]
+- **Crime Prevention Through Environment Design** (CPTED) is something that can be used to redesign bustands as safety islands as opposed to the City's initative to build safety islands  [^1]
+- **Constant life and movement** should be encouraged by **mixed activites.** Bus Stands in India are already full of mixed activites, but can it be **formally encouraged**? [^2]
+- **Feeder busses would encourage constant activity**. [Need Citation]
+
+### Problem statement
+- Smaller or no Bus travel roads need to have busses running through them. Like on the inner roads of Ylk New Town.
+- What are these roads that the BMTC needs to run new routes on?
+    - Are they based on population density?
+    - Are they based on the number of workplaces nearby? 
+    - Are there a lot of long distance travellers? Do migrants stay in housing that is far away?
+    - Are these roads deserted after a certain time?
+
+### Avant-garde routing
+- What if i ignore residential zoning and route public transport through them. 
+- Would this not reduce private vehicle traffic possibly?
+
+
+```{r libs}
+library(sfnetworks)
+library(osmdata)
+library(sf)
+library(ggplot2)
+library(geojsonio)
+library(broom)
+library(networkD3)
+library(rgdal)
+```
+
+```{r load-download-data}
+
+bbox <- c(77.534809,13.015934,77.646218,13.070535)
+
+# bloreRoads <- opq(bbox ) %>%
+#     add_osm_feature(key = 'highway', value = c( "street", "primary", "primary_link", "secondary_link","secondary", "road")
+#     ) %>%
+#     osmdata_sf()%>% 
+#     osm_poly2line()
+#     st_geometry() %>%
+#     st_write('roads.shp') # Convert to SF
+
+bloreRoads2 <- geojson_sf('assets/osm-data/secondary-tertiary-roads.geojson') 
+
+busRoutes <- geojson_sf('kgis-arcgis-api/bus-routes.geojson')%>% 
+            st_transform(st_crs(bloreRoads2))
+
+busStops <- geojson_sf('kgis-arcgis-api/busstops.geojson')%>% 
+           st_transform(st_crs(bloreRoads2))
+
+# ggplot() +
+#     geom_sf(data = bloreRoads$osm_lines,
+#             inherit.aes = FALSE,
+#             color = "black") +
+#     geom_sf(data = busRoutes,
+#             color = "orange")
+```
+
+```{r sfnetwork-objs}
+
+busRoutes <- st_cast(busRoutes, "LINESTRING")
+busRoutes <- busRoutes %>% 
+    as_sfnetwork() 
+bloreRoads2 <- bloreRoads2 %>% 
+    as_sfnetwork() 
+busStops <- busStops %>%
+            as_sfnetwork()
+
+```
+
+```{r busnetowork}
+#| fig-cap: "Bus Network + Road Network + Bus Stops in Bangalore, Red lines have no Busses plying through them"
+
+plot(bloreRoads2, col="red")
+plot(busRoutes, col="#1e1e1e", add=TRUE)
+plot(busStops,draw_lines = FALSE, col="grey", add=TRUE)
+```
+
+
+## Analysing the network
+### relevant libs
+- https://github.com/ropensci/stplanr
+- https://luukvdmeer.github.io/sfnetworks
+
+### Algorithm as i see it
+- Load both layers (Bus routes and existing network)
+- Find intersecting roads or roads that satisfy a filter within a radius
+    - Filter/Weight based on population, school density, work-place density, etc
+### Interactive possibilities
+- Release this as a tool for Planning agencies? 
+- Enable visual interface for easing usage for those who do not have techinical know-how
+
+ [^1]: Iqbal, Asifa, and Vania Ceccato. "Is CPTED useful to guide the inventory of safety in parks? A study case in Stockholm, Sweden." _International criminal justice review_ 26, no. 2 (2016): 150-168.
+ [^2]: Jacobs, Jane. "Jane jacobs." _The Death and Life of Great American Cities_ 21, no. 1 (1961): 13-25.
+ [^3]: Gardner, Carol Brooks. _Passing by: Gender and public harassment_. Univ of California Press, 1995.
+ [^7]: Paul, Tanusree. "Public Spaces and Everyday Lives: Gendered Encounters in the Metro City of Kolkata." In _Doing Gender, Doing Geography_, pp. 264-283. Routledge India, 2012.

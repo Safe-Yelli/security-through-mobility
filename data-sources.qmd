@@ -26,22 +26,25 @@ import pandas as pd
 
 linksList = []
 # Sample URL to fetch the html page
-url = "https://stg3.ksrsac.in/kgis/rest/services/TRANSPORT/BMTC/MapServer/0/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelContains&relationParam=&outFields=&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=true&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&f=html"
+url = "https://stg3.ksrsac.in/kgis/rest/services/TRANSPORT/BMTC/MapServer/0/query?where=OBJECTID%3E"
 
+params = "&text=&objectIds=%5B3000%2C+4000%5D&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelContains&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=9000&f=geojson"
+
+count = 0
 # Get the page through get() method
-pageContent = requests.get(url=url).content
-parseContent = bs(pageContent, 'lxml')
-links = parseContent.find(class_="rbody").find_all('a')
 
-for link in links:
-    linkContent = requests.get("https://stg3.ksrsac.in/" + links[6]['href']).content
-    parseLinkContent = bs(linkContent, 'html.parser')
-    body = parseContent1.find("div", class_="rbody")
 
-    stopID = body.find("i",text="KGISBMTC_BusstopID: ").next_sibling.strip())
-    with open("busstops.json", "a") as file:
-    json.dump(json_, file)
-#linksList = pd.DataFrame(list(linksList))
+for count in range (0, 10000):
+    linkContent = requests.get(url + str(count) + params).content
+
+    linkContent = json.loads(linkContent)
+
+    with open("busstops.geojson", "w") as file:
+        json.dump(linkContent, file)
+    file.close()
+
+    count = count + 1000
+#linksList = pd.DataFrame(list(linksist))
 #linksList.to_csv("scraping-kgis/links.csv")
 
 
