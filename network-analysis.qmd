@@ -1,13 +1,14 @@
 ---
 title: Analysing bus network in bangalore to discover pertinent smaller, newer routes
-date: 2022-12-12
+date: 2022-12-12 
+author: Adhavan Mohana Sivaraj (205304006)
 execute:
   echo: false
   warning: false
 format: 
     pdf:
-        fig-width: 7
-        fig-height: 5
+        fig-width: 8
+        fig-height: 10
 geometry: margin=2cm
 ---
 ## Context
@@ -33,19 +34,19 @@ geometry: margin=2cm
 
 ```{r libs}
 library(sfnetworks)
+library(igraph)
+library(tidygraph)
 library(osmdata)
 library(sf)
 library(ggplot2)
 library(geojsonio)
-library(broom)
-library(networkD3)
-library(rgdal)
+library(geojsonsf) #blazing fast but causes CRS issues, geojsonio handles fine
+library(tidyverse)
 ```
 
 ```{r load-download-data}
-
-bbox <- c(77.534809,13.015934,77.646218,13.070535)
-
+## Attempt to download from OSM, downloading from OverPass turbo returns more data with the same query
+# bbox <- c(77.534809,13.015934,77.646218,13.070535)
 # bloreRoads <- opq(bbox ) %>%
 #     add_osm_feature(key = 'highway', value = c( "street", "primary", "primary_link", "secondary_link","secondary", "road")
 #     ) %>%
@@ -54,40 +55,117 @@ bbox <- c(77.534809,13.015934,77.646218,13.070535)
 #     st_geometry() %>%
 #     st_write('roads.shp') # Convert to SF
 
-bloreRoads2 <- geojson_sf('assets/osm-data/secondary-tertiary-roads.geojson') 
 
-busRoutes <- geojson_sf('kgis-arcgis-api/bus-routes.geojson')%>% 
-            st_transform(st_crs(bloreRoads2))
+bloreRoadsSmall <- geojsonsf::geojson_sf('assets/osm-data/unclassified-livingStreets.geojson') %>%
+    select(geometry)
 
-busStops <- geojson_sf('kgis-arcgis-api/busstops.geojson')%>% 
-           st_transform(st_crs(bloreRoads2))
+bloreRoadsSecondary <- geojsonsf::geojson_sf('assets/osm-data/secondary-tertiary-roads.geojson') %>%
+    select(geometry)
 
-# ggplot() +
-#     geom_sf(data = bloreRoads$osm_lines,
-#             inherit.aes = FALSE,
-#             color = "black") +
-#     geom_sf(data = busRoutes,
-#             color = "orange")
+busRoutes <- geojsonio::geojson_sf('kgis-arcgis-api/bus-routes.geojson') %>%
+     st_transform(st_crs(bloreRoadsSecondary)) %>%
+    select(OBJECTID, KGISBMTCRootName, geometry)
+
+busStops <- geojsonsf::geojson_sf('kgis-arcgis-api/busstops.geojson')%>% 
+    st_transform(st_crs(busRoutes))
+```
+
+```{r rounding}
+st_geometry(bloreRoadsSecondary) <- st_geometry(bloreRoadsSecondary) %>%
+  lapply(function(x) round(x, 4)) %>%
+  st_sfc(crs = st_crs(bloreRoadsSecondary))
+
+st_geometry(bloreRoadsSmall) <- st_geometry(bloreRoadsSmall) %>%
+  lapply(function(x) round(x, 4)) %>%
+  st_sfc(crs = st_crs(bloreRoadsSecondary))
+
+st_geometry(busRoutes) <- st_cast(busRoutes, "LINESTRING") %>%
+  st_geometry() %>%
+  lapply(function(x) round(x, 4)) %>%
+  st_sfc(crs = st_crs(bloreRoadsSecondary))
+
 ```
 
 ```{r sfnetwork-objs}
-
-busRoutes <- st_cast(busRoutes, "LINESTRING")
 busRoutes <- busRoutes %>% 
+    st_cast("LINESTRING") %>%
     as_sfnetwork() 
-bloreRoads2 <- bloreRoads2 %>% 
+bloreRoadsSecondary <- bloreRoadsSecondary %>% 
+    as_sfnetwork() 
+bloreRoadsSmall <- bloreRoadsSmall %>% 
     as_sfnetwork() 
 busStops <- busStops %>%
-            as_sfnetwork()
+    as_sfnetwork()
+```
+
+```{r simplify}
+library(dbscan)
+# Retrieve the coordinates of the nodes.
+# Cluster the nodes with the DBSCAN spatial clustering algorithm.
+# We set eps = 0.5 such that:
+# Nodes within a distance of 0.5 from each other will be in the same cluster.
+# We set minPts = 1 such that:
+# A node is assigned a cluster even if it is the only member of that cluster.
+# Add the cluster information to the nodes of the network.
+
+busRoutesClustered <- busRoutes %>%
+  activate("nodes") %>%
+  st_coordinates() 
+  
+busRoutesClustered <- dbscan(busRoutesClustered, eps = 0.5, minPts = 1)$cluster 
+
+busRoutes_1 <- busRoutes %>%
+  activate("nodes") %>%
+  mutate(cls = busRoutesClustered) %>%
+  convert(to_spatial_smooth)
+
+bloreRoadsSecondaryClustered <- bloreRoadsSecondary %>%
+  activate("nodes") %>%
+  st_coordinates() 
+
+bloreRoadsSecondaryClustered <-  dbscan(bloreRoadsSecondaryClustered, eps = 0.5, minPts = 1)$cluster 
+
+bloreRoadsSecondary_1 <- bloreRoadsSecondary %>%
+  activate("nodes") %>%
+  mutate(cls = bloreRoadsSecondaryClustered)%>%
+  convert(to_spatial_smooth)
+
 
 ```
 
-```{r busnetowork}
-#| fig-cap: "Bus Network + Road Network + Bus Stops in Bangalore, Red lines have no Busses plying through them"
+```{r }
+#| layout: [[50,50], [100]]
+#| label: Existing network
+#| fig-subcap:
+#|      - Secondary and Tertiary Road Network excluding trunk roads
+#|      - Small and Neighbourhood Road Network
+#|      - Bus Route Network 
 
-plot(bloreRoads2, col="red")
-plot(busRoutes, col="#1e1e1e", add=TRUE)
-plot(busStops,draw_lines = FALSE, col="grey", add=TRUE)
+
+plot(bloreRoadsSecondary_1, col="red", lwd= 0.5)
+plot(bloreRoadsSmall, col="red", lwd= 0.5)
+plot(busRoutes_1, col="#1e1e1e", lwd= 0.5)
+
+#plot(busStops,draw_lines = FALSE, col="grey", add=TRUE)
+```
+
+```{r}
+#| layout-ncol: 2
+#| label: Combining
+#| fig-subcap:
+#|      - Road Network + Bus network
+#|      - Roads with no bus routes
+
+filteredSecondaryRoads <- bloreRoadsSecondary_1 %>%
+            activate("edges") %>%
+            filter(edge_intersects((busRoutes_1)))
+
+
+plot(st_geometry(filteredSecondaryRoads, "edges"), lwd=1, col="red", bg= "#1e1e1e" )
+plot(st_geometry(busRoutes_1, "edges"), col="#ccccbc", add=TRUE)
+plot(st_geometry(filteredSecondaryRoads, "edges"), lwd=1, col="red", bg= "#1e1e1e" )
+
+
 ```
 
 
