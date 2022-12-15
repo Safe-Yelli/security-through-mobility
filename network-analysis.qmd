@@ -1,16 +1,41 @@
 ---
 title: Analysing bus network in bangalore to discover pertinent smaller, newer routes
 date: 2022-12-12 
-author: Adhavan Mohana Sivaraj (205304006)
+date-modified: 2022-12-15 
 execute:
   echo: false
   warning: false
 format: 
     pdf:
-        fig-width: 8
-        fig-height: 10
+      fig-width: 8
+      fig-height: 10
+    html:
+      embed-resources: true
+      page-layout: custom
 geometry: margin=2cm
 ---
+
+<style>
+  .sticky-chunk .cell-output-display {
+    overflow-x: unset !important;
+}
+  .sticky-chunk{
+    position: -webkit-sticky; /* Safari */
+    position: sticky !important;
+    top: 0;
+
+    width: 100%;
+    height: 100vh;
+  }
+
+  #title-block-header{
+    padding: 5em 2em;
+  }
+</style>
+
+::: { .grid .text-container}
+
+::: {.g-col-md-4 .g-col-sm-12 .px-md-5 .mx-sm-auto}
 ## Context
 
 ### Motivations to design with
@@ -31,6 +56,8 @@ geometry: margin=2cm
 - What if i ignore residential zoning and route public transport through them. 
 - Would this not reduce private vehicle traffic possibly?
 
+
+## Analysing the network 
 
 ```{r libs}
 library(sfnetworks)
@@ -62,7 +89,7 @@ bloreRoadsSmall <- geojsonsf::geojson_sf('assets/osm-data/unclassified-livingStr
 bloreRoadsSecondary <- geojsonsf::geojson_sf('assets/osm-data/secondary-tertiary-roads.geojson') %>%
     select(geometry)
 
-busRoutes <- geojsonio::geojson_sf('kgis-arcgis-api/bus-routes.geojson') %>%
+busRoutes <- geojsonsf::geojson_sf('kgis-arcgis-api/bus-routes.geojson') %>%
      st_transform(st_crs(bloreRoadsSecondary)) %>%
     select(OBJECTID, KGISBMTCRootName, geometry)
 
@@ -72,16 +99,16 @@ busStops <- geojsonsf::geojson_sf('kgis-arcgis-api/busstops.geojson')%>%
 
 ```{r rounding}
 st_geometry(bloreRoadsSecondary) <- st_geometry(bloreRoadsSecondary) %>%
-  lapply(function(x) round(x, 4)) %>%
+  lapply(function(x) round(x, 3)) %>%
   st_sfc(crs = st_crs(bloreRoadsSecondary))
 
 st_geometry(bloreRoadsSmall) <- st_geometry(bloreRoadsSmall) %>%
-  lapply(function(x) round(x, 4)) %>%
+  lapply(function(x) round(x, 3)) %>%
   st_sfc(crs = st_crs(bloreRoadsSecondary))
 
 st_geometry(busRoutes) <- st_cast(busRoutes, "LINESTRING") %>%
   st_geometry() %>%
-  lapply(function(x) round(x, 4)) %>%
+  lapply(function(x) round(x, 3)) %>%
   st_sfc(crs = st_crs(bloreRoadsSecondary))
 
 ```
@@ -99,7 +126,8 @@ busStops <- busStops %>%
 ```
 
 ```{r simplify}
-library(dbscan)
+# | eval: false
+# library(dbscan)
 # Retrieve the coordinates of the nodes.
 # Cluster the nodes with the DBSCAN spatial clustering algorithm.
 # We set eps = 0.5 such that:
@@ -108,68 +136,29 @@ library(dbscan)
 # A node is assigned a cluster even if it is the only member of that cluster.
 # Add the cluster information to the nodes of the network.
 
-busRoutesClustered <- busRoutes %>%
-  activate("nodes") %>%
-  st_coordinates() 
+# busRoutesClustered <- busRoutes %>%
+#   activate("nodes") %>%
+#   st_coordinates() 
   
-busRoutesClustered <- dbscan(busRoutesClustered, eps = 0.5, minPts = 1)$cluster 
+# busRoutesClustered <- dbscan(busRoutesClustered, eps = 0.5, minPts = 1)$cluster 
 
-busRoutes_1 <- busRoutes %>%
-  activate("nodes") %>%
-  mutate(cls = busRoutesClustered) %>%
-  convert(to_spatial_smooth)
+# busRoutes_1 <- busRoutes %>%
+#   activate("nodes") %>%
+#   mutate(cls = busRoutesClustered) %>%
+#   convert(to_spatial_smooth)
 
-bloreRoadsSecondaryClustered <- bloreRoadsSecondary %>%
-  activate("nodes") %>%
-  st_coordinates() 
+# bloreRoadsSecondaryClustered <- bloreRoadsSecondary %>%
+#   activate("nodes") %>%
+#   st_coordinates() 
 
-bloreRoadsSecondaryClustered <-  dbscan(bloreRoadsSecondaryClustered, eps = 0.5, minPts = 1)$cluster 
+# bloreRoadsSecondaryClustered <-  dbscan(bloreRoadsSecondaryClustered, eps = 0.5, minPts = 1)$cluster 
 
-bloreRoadsSecondary_1 <- bloreRoadsSecondary %>%
-  activate("nodes") %>%
-  mutate(cls = bloreRoadsSecondaryClustered)%>%
-  convert(to_spatial_smooth)
-
-
+# bloreRoadsSecondary_1 <- bloreRoadsSecondary %>%
+#   activate("nodes") %>%
+#   mutate(cls = bloreRoadsSecondaryClustered)%>%
+#   convert(to_spatial_smooth)
 ```
 
-```{r }
-#| layout: [[50,50], [100]]
-#| label: Existing network
-#| fig-subcap:
-#|      - Secondary and Tertiary Road Network excluding trunk roads
-#|      - Small and Neighbourhood Road Network
-#|      - Bus Route Network 
-
-
-plot(bloreRoadsSecondary_1, col="red", lwd= 0.5)
-plot(bloreRoadsSmall, col="red", lwd= 0.5)
-plot(busRoutes_1, col="#1e1e1e", lwd= 0.5)
-
-#plot(busStops,draw_lines = FALSE, col="grey", add=TRUE)
-```
-
-```{r}
-#| layout-ncol: 2
-#| label: Combining
-#| fig-subcap:
-#|      - Road Network + Bus network
-#|      - Roads with no bus routes
-
-filteredSecondaryRoads <- bloreRoadsSecondary_1 %>%
-            activate("edges") %>%
-            filter(edge_intersects((busRoutes_1)))
-
-
-plot(st_geometry(filteredSecondaryRoads, "edges"), lwd=1, col="red", bg= "#1e1e1e" )
-plot(st_geometry(busRoutes_1, "edges"), col="#ccccbc", add=TRUE)
-plot(st_geometry(filteredSecondaryRoads, "edges"), lwd=1, col="red", bg= "#1e1e1e" )
-
-
-```
-
-
-## Analysing the network
 ### relevant libs
 - https://github.com/ropensci/stplanr
 - https://luukvdmeer.github.io/sfnetworks
@@ -180,7 +169,135 @@ plot(st_geometry(filteredSecondaryRoads, "edges"), lwd=1, col="red", bg= "#1e1e1
     - Filter/Weight based on population, school density, work-place density, etc
 ### Interactive possibilities
 - Release this as a tool for Planning agencies? 
-- Enable visual interface for easing usage for those who do not have techinical know-how
+- Enable visual interface for easing usage for those who do not have techinical knsow-how
+
+```{r detect-intersects}
+
+#| layout-ncol: 2
+#| label: Combining
+#| fig-subcap:
+#|      - Road Network + Bus network
+#|      - Roads with no bus routes
+roads <- st_join(bloreRoadsSecondary, bloreRoadsSmall)
+# plot(st_geometry(roads, "edges"))
+# plot(st_geometry(busRoutes, "edges"),col="red", add=TRUE)
+
+filteredRoads <- roads %>%
+            activate("edges") %>%
+            filter(edge_intersects((busRoutes)))
+negateFilteredRoads <- roads %>% 
+  activate("edges") %>%
+  mutate(busRouteIntersecting = edge_touches((busRoutes))) %>%
+  select(!busRouteIntersecting)
+
+
+negateFilteredRoads_nearBusStop = negateFilteredRoads %>%
+  activate("nodes") %>%
+  st_filter(busStops, .predicate = st_is_within_distance, dist = 400)
+
+plot(st_geometry(filteredRoads, "edges"),col="red")
+  plot(st_geometry(negateFilteredRoads, "edges"), col="white", add=TRUE)
+
+ 
+```
+```{r plot-as-is}
+#| label: Existing network
+#| fig-subcap:
+#|      - Secondary and Tertiary Road Network excluding trunk roads
+#|      - Bus Route Network 
+#|      - Roads with busses running through them (black) and those without (red). Some roads are 300mts near a bus stop and can be ignored. Please note that this distance is calculated as a radial distance and not measured through the road network
+
+
+plot(roads, col="red", lwd= 0.5)
+plot(busRoutes, col="red", lwd= 0.5)
+plot(st_geometry(negateFilteredRoads, "edges"), col="red", bg="#2c2c2c")
+plot(st_geometry(negateFilteredRoads_nearBusStop, "edges"), col="green", add=TRUE)
+plot(st_geometry(filteredRoads, "edges"), add=TRUE)
+#plot(busStops,draw_lines = FALSE, col="grey", add=TRUE)
+```
+
+```{r export-to-ojs}
+#https://stackoverflow.com/questions/66268876/how-to-export-shp-file-after-spatial-networks-in-r-with-sf-and-tidygraph
+
+filteredRoadsOJS<-filteredRoads %>% 
+  morph(to_spatial_simple) %>%
+  unmorph() %>%
+  activate("edges") %>%
+  as_tibble() %>%
+  st_as_sf() %>%
+  sf_geojson()
+negateFilteredRoadsOJS<-negateFilteredRoads %>%
+  morph(to_spatial_simple) %>%
+  unmorph() %>% 
+  activate("edges") %>%
+  as_tibble() %>%
+  st_as_sf() %>%
+  sf_geojson()
+busRoutesOJS<-busRoutes %>%
+  morph(to_spatial_simple) %>%
+  unmorph() %>% 
+  activate("edges") %>%
+  as_tibble() %>%
+  st_as_sf() %>%
+  sf_geojson()
+ojs_define(filteredRoadsOJS = filteredRoadsOJS)
+ojs_define(negateFilteredRoadsOJS=negateFilteredRoadsOJS)
+ojs_define(busRoutes = busRoutesOJS)
+```
+::: 
+
+::: { .g-col-md-8 .g-col-sm-12 .sticky-chunk .px-md-3 .mx-sm-4}
+```{ojs}
+L = require('leaflet@1.9.3')
+
+
+html`<link href='${resolve('leaflet@1.9.3/dist/leaflet.css')}' rel='stylesheet' />`
+
+
+
+map = {
+
+  // In Observable, we instead create a div from scratch in this cell, so it's
+  // completely self-contained.
+  let container = DOM.element('div', { style: `width:auto;height:100vh` });
+  
+  // Note that I'm yielding the container pretty early here: this allows the
+  // div to be placed on the page. 
+  yield container;
+  
+  let map = L.map(container).setView([12.967562,77.591629], 11);
+
+  // base map
+  let osmLayer = L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}@2x.png', {
+      attribution: 'Wikimedia maps beta | &copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map)
+
+  // Overlay Layers
+  let roadsNoBusLayer = L.geoJson(JSON.parse(filteredRoadsOJS),{
+    color: 'red'
+  })
+  let roadsBusStopNearLayer = L.geoJson(JSON.parse(negateFilteredRoadsOJS),{
+    color: 'red'
+  })
+  let busRoute = L.geoJson(JSON.parse(busRoutes),{
+    color: 'red'
+  })
+  var baseLayers = {
+    "wiki-osm" : osmLayer,  
+  }
+  var overlayMaps = {
+    "Roads with no bus routes": roadsNoBusLayer,
+    "Roads with bus routes within 300mts": roadsBusStopNearLayer,
+    //"All bus routes": busRoutes
+  };
+
+  var layerControl = L.control.layers(baseLayers, overlayMaps).addTo(map);
+  
+  
+}
+```
+:::
+:::
 
  [^1]: Iqbal, Asifa, and Vania Ceccato. "Is CPTED useful to guide the inventory of safety in parks? A study case in Stockholm, Sweden." _International criminal justice review_ 26, no. 2 (2016): 150-168.
  [^2]: Jacobs, Jane. "Jane jacobs." _The Death and Life of Great American Cities_ 21, no. 1 (1961): 13-25.
