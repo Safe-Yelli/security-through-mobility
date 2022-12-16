@@ -1,5 +1,6 @@
 ---
-title: Analysing bus network in bangalore to discover pertinent smaller, newer routes
+title: Security *through* mobility, not just *in* mobility
+subtitle: Analysing the bus and road network in Bengaluru to propose the possibility of increased mobility thus encouraging more personal security + accesibility for women. With a particular focus on introducing Feeder Busses. A safeyelli.in project
 date: 2022-12-12
 date-modified: 2022-12-15
 execute:
