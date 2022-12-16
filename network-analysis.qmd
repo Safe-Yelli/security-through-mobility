@@ -41,7 +41,6 @@ fig-cap-location: top
   }
   #map{
     height: 100vh;
-    min-width: 70vw
   }
   #title-block-header{
     padding: 5em 1em 0 1em;
@@ -81,7 +80,7 @@ fig-cap-location: top
 :::
 ::: { .grid .text-container}
 
-::: {.g-col-lg-3 .g-col-md-4  .g-col-sm-12 .g-col-12 .px-md-5 .mx-sm-auto}
+::: {.g-col-lg-4 .g-col-md-4  .g-col-sm-12 .g-col-12 .px-md-3 .mx-sm-auto}
 
 ## Context
 - Women face a lot of issues with accessibility through the lens of safety on roads. [^3]
@@ -308,7 +307,7 @@ ojs_define(busRoutes = busRoutesOJS)
 ```
 :::
 
-::: { .g-col-lg-9 .g-col-md-8 .g-col-sm-12 .g-col-12 .sticky-chunk .px-md-3 .px-sm-1 #map }
+::: { .g-col-lg-8 .g-col-md-8 .g-col-sm-12 .g-col-12 .sticky-chunk .px-md-3 .px-sm-1 #map }
 ```{ojs}
 L = require('leaflet@1.9.3')
 
