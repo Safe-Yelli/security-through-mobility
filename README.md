@@ -4,31 +4,48 @@ date: 2022-10-15
 
 # Security *through* mobility, not just *in* mobility
 
-
-## Important directions, ideas
+## Context
 - Women face a lot of issues with accessibility through the lens of safety on roads. [^3]
     - SafeYelli [^4] has been documenting it for over a year. So have SafeCity [^5], SafetyPin [^6] and other solutions
 - Safety and access to **public spaces in the city are negotiated for accessibility to the self by women** [^7]
+
+### Motivations to design with
 - **Crime Prevention Through Environment Design** (CPTED) is something that can be used to redesign bustands as safety islands as opposed to the City's initative to build safety islands  [^1]
 - **Constant life and movement** should be encouraged by **mixed activites.** Bus Stands in India are already full of mixed activites, but can it be **formally encouraged**? [^2]
 - **Feeder busses would encourage constant activity**. [Need Citation]
+- A data visualisation to **realise the areas that are not covered by existing bus routes and would be helped by feeder busses. A system?** could be created. 
+- What new methods exist to understanding a complex routing system? Through [SFNetworks](https://luukvdmeer.github.io/sfnetworks) and [STPlanner](https://github.com/ropensci/stplanr) packages for R.
 
-## What is needed? 
-- An open dataset of **bus stands, lighting conditions, sidewalk conditions, standards conformity** [^10] for which SafetiPin and SafeYelli are developing tools. 
-    - SafetiPin has developed a mature relationship with cities and administrations and has a mature dataset.
-    - But the contestation here is that the **dataset is not seemingly open or contributable to.** The methodology is also less than ideal considering, we need more granularity and simplicity for the tools meant for crowdsourcing.
-- A data visualisation to **realise the areas that are not covered by existing bus routes and would be helped by feeder busses. A system?** 
+## Problem statement
+- Smaller or no Bus travel roads need to have busses running through them. Like on the inner roads of Ylk New Town.
+- What are these roads that the BMTC needs to run new routes on?
+    - Are they based on population density?
+    - Are they based on the number of workplaces nearby?
+    - Are there a lot of long distance travellers? Do migrants stay in housing that is far away?
+    - Are these roads deserted after a certain time?
 
-## A possibilites moodboard 
+## Avant-garde routing
+- What if i ignore residential zoning and route public transport through them.
+- Would this not reduce private vehicle traffic possibly?
 
-### Network analysis, visualisation, voronoi diagrams of bus stands and densities 
 
-- A network visualisation of bus stands from 2016 [^8]
-![](Areas/SMI/SA/security-through-mobility/assets/network_visualisation.png)
+## Analysing the network
+### Algorithm as i see it
+- Load both layers (Bus routes and existing network)
+- Find intersecting roads or roads that satisfy a filter within a radius
+    - Filter out roads that do not have a bus route
+      - Filter/Weight based on population, school density, work-place density, etc
 
-- Delauney Triangulation to optimise bus stops locations  [^9] 
-![](Areas/SMI/SA/security-through-mobility/assets/triangulation_optimisation.jpg)
-
+## Learning history 
+- Multiple CRS issues the busRoutes and RoadNetwork data come from different sources
+- Both networks are not fully alike and hence the network cannot be analysed without fully snapping both networks together. 
+  - I attempted to round the data to achieve this, but this does not fully work. 
+  - I need to snap with the sf library's method, did not work and could not fully implement in the given time
+  - The edge query functions need to be fully explored
+## To be done
+- Implement multiple other filters as suggested previously
+- Simplify and round both networks
+- Verify idea with professionals
 
  [^1]: Iqbal, Asifa, and Vania Ceccato. "Is CPTED useful to guide the inventory of safety in parks? A study case in Stockholm, Sweden." _International criminal justice review_ 26, no. 2 (2016): 150-168.
  [^2]: Jacobs, Jane. "Jane jacobs." _The Death and Life of Great American Cities_ 21, no. 1 (1961): 13-25.
