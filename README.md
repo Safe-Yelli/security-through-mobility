@@ -1,7 +1,5 @@
----
-date: 2022-10-15
----
 
+*Work in progress*
 # Security *through* mobility, not just *in* mobility
 
 ## Context
