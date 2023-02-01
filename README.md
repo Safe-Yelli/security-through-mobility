@@ -2,6 +2,7 @@
 *Work in progress*
 # Security *through* mobility, not just *in* mobility
 
+**Link**: https://safe-yelli.github.io/security-through-mobility/
 ## Context
 - Women face a lot of issues with accessibility through the lens of safety on roads. [^3]
     - SafeYelli [^4] has been documenting it for over a year. So have SafeCity [^5], SafetyPin [^6] and other solutions
